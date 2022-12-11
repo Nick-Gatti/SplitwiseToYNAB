@@ -71,3 +71,5 @@ Start
 
 - Add logic to update/delete expenses in YNAB when they're updated/deleted in Splitwise
 - Add support for more than one person being repaid (This may work already, I haven't tested.)
+- Add OAuth support for logging into Splitwise/YNAB to make it easier to get up and running.
+- Add Pushover support
