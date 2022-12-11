@@ -1,5 +1,6 @@
 
 # SplitwiseToYNAB
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/nickgatti)
 
 This script allows for an easy way to keep Splitwise and You Need A Budget (YNAB) up to date without having to manually import each purchase made on your behalf. An example of this can be found in option two of the [YNAB Blog post on utilizing Splitwise](https://support.youneedabudget.com/en_us/splitwise-and-ynab-a-guide-H1GwOyuCq#register) in your budget.
 
