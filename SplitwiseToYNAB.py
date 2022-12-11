@@ -14,7 +14,7 @@ import getAccountInfo
 
 load_dotenv()
 logger=logging.getLogger('logger')
-logger.setLevel(logging.INFO) # set logger level
+logger.setLevel(logging.DEBUG) # set logger level
 logFormatter = logging.Formatter\
 ("%(name)-12s %(asctime)s %(levelname)-8s %(filename)s:%(funcName)s %(message)s")
 consoleHandler = logging.StreamHandler(stdout)
@@ -41,10 +41,10 @@ logger.info("Starting...")
 
 
 while True:
-    weekAgo = datetime.datetime.now()-datetime.timedelta(days)
+    daysBack = datetime.datetime.now()-datetime.timedelta(days)
     #Get data from Splitwise/YNAB
-    ynabTransactions=json.loads(requests.get('https://api.youneedabudget.com/v1/budgets/'+ynabBudgetID+'/accounts/'+ynabSplitwiseAccountID+'/transactions', headers={'Authorization':'Bearer '+ynabKey}, params={'since_date':weekAgo}).content)['data']['transactions']
-    splitwiseData=json.loads(requests.get('https://secure.splitwise.com/api/v3.0/get_expenses',headers={'Authorization': 'Bearer '+splitwiseKey}, params={}).content)
+    ynabTransactions=json.loads(requests.get('https://api.youneedabudget.com/v1/budgets/'+ynabBudgetID+'/accounts/'+ynabSplitwiseAccountID+'/transactions', headers={'Authorization':'Bearer '+ynabKey}, params={'since_date':daysBack}).content)['data']['transactions']
+    splitwiseData=json.loads(requests.get('https://secure.splitwise.com/api/v3.0/get_expenses',headers={'Authorization': 'Bearer '+splitwiseKey}, params={'updated_after':daysBack}).content)
     ynabImportIds=[]
     for transaction in ynabTransactions:
         if transaction['import_id']:
@@ -52,9 +52,9 @@ while True:
     newExpenses=[]
     for expense in splitwiseData["expenses"]:
         expenseId=(expense['id'])
-        if(expenseId in ynabImportIds):
+        if(str(expenseId) in ynabImportIds):
             ##TODO: Add logic for updated/deleted expenses
-            logger.info('Skipping previously added import ID' +expense['id'])
+            logger.debug('Skipping previously added import ID ' +str(expense['id']))
             continue
         else:
             for i in range(len(expense['repayments'])):
@@ -71,7 +71,7 @@ while True:
           "account_id": ynabSplitwiseAccountID,
           "date": newExpense['date'],
           "amount": 0,
-          "memo": newExpense['description']+', '+userName+  ' owe ' if userName=='you' else ' owes' +'{0:.2f}'.format(Decimal(re.sub(r'[^\d\-.]', '', newExpense['amount']))),
+          "memo": newExpense['description']+', '+userName+  (' owe ' if userName=='you' else ' owes ') +'{0:.2f}'.format(Decimal(re.sub(r'[^\d\-.]', '', newExpense['amount']))),
           "cleared": "cleared",
           "subtransactions":[
             {
@@ -84,10 +84,12 @@ while True:
             ]
             })
         logger.info('Added new expense "'+newExpense['description']+'"')
-    ynabNewTransactions={"transactions":ynabNewTransactions}
-    print(ynabNewTransactions)
-    response=requests.post('https://api.youneedabudget.com/v1/budgets/'+ynabBudgetID+'/transactions',headers={'Authorization':'Bearer '+ynabKey},params={'budget_id':ynabBudgetID},json=ynabNewTransactions)
-    
+    if len(ynabNewTransactions)>0:
+        ynabNewTransactions={"transactions":ynabNewTransactions}
+        response=requests.post('https://api.youneedabudget.com/v1/budgets/'+ynabBudgetID+'/transactions',headers={'Authorization':'Bearer '+ynabKey},params={'budget_id':ynabBudgetID},json=ynabNewTransactions)
+        logger.debug(response.content)
+    else:
+        logger.info('No new transactions. Sleeping.')
     time.sleep(sleep*60)
 
 
