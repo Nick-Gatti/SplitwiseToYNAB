@@ -14,7 +14,8 @@ import getAccountInfo
 
 load_dotenv()
 logger=logging.getLogger('logger')
-logger.setLevel(logging.DEBUG) # set logger level
+logLevel = os.getenv('LOGLEVEL', 'INFO').upper()
+logging.basicConfig(level=logLevel)
 logFormatter = logging.Formatter\
 ("%(name)-12s %(asctime)s %(levelname)-8s %(filename)s:%(funcName)s %(message)s")
 consoleHandler = logging.StreamHandler(stdout)
@@ -30,7 +31,7 @@ ynabKey=os.getenv('YNAB_API_KEY')
 ynabBudgetID=getAccountInfo.getYNABBudgetID(ynabKey,os.getenv('YNAB_BUDGET_NAME',default='last-used'))
 ynabSplitwiseAccountID=getAccountInfo.getYNABSplitwiseAccountID(os.getenv('YNAB_SPLITWISE_ACCOUNT_NAME', default='Splitwise'),ynabBudgetID,ynabKey)
 ynabSplitwiseCategoryID=getAccountInfo.getYNABSplitwiseCategoryID(os.getenv('YNAB_SPLITWISE_CATEGORY_NAME',default='Splitwise'),ynabBudgetID,ynabKey)
-
+ynabServerKnowledge=0
 #General variables
 userName=os.getenv('NAME', default='you')
 days=int(os.getenv('DAYS',default=7))
